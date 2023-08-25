@@ -1,0 +1,9 @@
+*Cookies en express
+  1-Instalar cookie-parser
+    =====>npm i cookie-parser
+  2-Configurar cors para definir a que direccion de navegador enviar la cookie(cliente de Angular,Vue,React etc)
+    ====>{
+          origin: 'http://localhost:4200',
+          credentials: true
+          }
+  3-Configurar la cookie(Ver propiedades en auth.js)        

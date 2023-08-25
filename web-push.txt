@@ -1,0 +1,55 @@
+Para ustilizar esta libreria tenemos que conocer dos conceptos basicos
+  1-Tenemmos que subscribbir al usuario a nuestro servidor para que cada vez que ocurra un cambio en el 
+    servidor notificar al usuario.Esta notificacion solo sera posible si el usuario mantiene una conexion
+    con el servidor(esto es lo que posibilita la comunicacion).Esta conexion se mantiene en el sitio web
+    a traves de un proceso que se mantenga escuchando siempre, para que aunque el ususario cierrre la pagina
+    se sigan mandando notificaciones. Para esto usamos Service Worker(una api del navegador)
+
+  2-Los services worker nos permiten ejecutar un proceso en background(no es notada por el ususario).Los Service
+    worker. Esta api posibilita que se manden notificaciones a pesar de que el usuairo se mantenga fuera la pagina
+    web.
+
+ Como trabajar con web-push?
+  1-Necesitamos de una llave publica y de otra privada(vapid keys).Estas las generamos con el comando:
+    npx web-push generate-vapid-keys
+
+  2-Estas llaves las guardamos en .env(como variables de entorno), por si necesitamos subirla a algun repo 
+    como gitHub estas  no sean visibles
+      Nota: instalar el modulo dotenv para leer los .env y ejecutarlo como primer proceso en nuestro servidor
+          para que cargue las variables de entorno guardadas en el .env
+      Nota: estas variables de entorno son asignadas al sistema operativo   
+      Nota: process.env permite acceder a los recursos de nuestro sistema operativo 
+
+  3-Ahora configuramos web-push como servicio. Para ello utilizamos: 
+  webpush.setVapidDetails(correo desde el que llegan las notificacions,llave publica, llave privada).Con este
+  servicio configurado podemos empezar a subscribir nuevos usuarios y enviar notificaciones a nuestros clientes.
+
+
+  4-Luego comenzamos a subscribir a los usuarios.
+
+  Como subscribimos al usuario?
+  1-Primero creamos un archivo worker(en el frontend) y este sera importado en la peticion que crearemos para 
+    subscribir a ese service workeer con la funcion navigator.serviceWorker.register('direccion del archivo worker').
+    Estafuncion ademas de recibir el archivo recibe tambien un objeto de configuracion que tiene propiedades como
+    alcance.
+    Nota: En el apartado de application del navegador podemos ver los service workers que tenemos creados.  
+    Nota: Solo se subscribe el service worker una vez.
+
+  2-Ahora con nuestro service worker podemos subscribir a los usuarios con la funcion .pushManager.subscribe(), que 
+  recibe un objeto de configuracion con propiedades como visibilidad y la llave publica del servidor.Esta llave
+  publica en un inicio esta en formato string pero web push trabaja con esa llave en formato Uint8Array, por lo
+  que la parseamos en el frontend.
+
+  3-Una vez guardamos la subscripcion, la mandamos al servidor a traves del body de la request en formato string
+    con JSON.strigify. Con esta data ya el servidor puede comenzar a mandar notificaciones a traves de web-push.
+
+  Comenzando a mandar notificaciones
+  1-La subscripcion que mandamos por el body de la request tiene varias propiedades como el endpoint, expiration
+  time y la llave publica del servidor. Este valor debe ser capturado para poder trabajar con el ya que tenemos
+  la localizacion(endpoint) y la llave
+
+  2-Una vez guardado usamos el metodo webpush.sendNotification(subscripcion, mensaje de notificacion).Si usamos
+    objetos para enviar notificaciones estos tienen que estar en formato String.  
+
+  3-Ahora tenemos que configurar el serviceWorker para que este escuchando cada vez que enviamos una notificacion
+    desde el servidor. El evento que desencadena web-push para enviar notificaciones es 'push'      
